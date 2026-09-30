@@ -1,0 +1,555 @@
+/* =====================================================================
+ * Motion layer — interaction & transition polish.
+ *
+ * Hard rules (so the pen.dev design is never altered):
+ *   - only transform / opacity / clip-path / filter are animated
+ *   - no new colours: every value comes from the existing tokens
+ *   - no layout property (width, height, margin, padding, gap) is touched
+ *     by a *reveal*; the only layout-ish additions are `position:relative`
+ *     and `overflow:hidden` on image plates, which have no visual effect.
+ *   - everything is namespaced `mo-` so it can be stripped cleanly
+ * ===================================================================== */
+
+/* ---------------------------------------------------------- scroll reveal */
+.mo {
+  opacity: 0;
+  transform: translate3d(0, var(--mo-y, 22px), 0);
+}
+
+.mo.mo-x {
+  transform: translate3d(var(--mo-x, -10px), 0, 0);
+}
+
+.mo.mo-fade {
+  transform: none;
+}
+
+.mo.is-in {
+  opacity: 1;
+  transform: none;
+  /* translate is listed separately so hover feedback never inherits the
+     reveal's stagger delay */
+  transition:
+    opacity var(--dur-slow) var(--ease-quiet),
+    transform var(--dur-slow) var(--ease-quiet),
+    translate var(--dur-base) var(--ease-quiet),
+    scale var(--dur-fast) var(--ease-quiet);
+  transition-delay:
+    calc(var(--mo-d, 0) * 70ms),
+    calc(var(--mo-d, 0) * 70ms),
+    0ms,
+    0ms;
+}
+
+/* ------------------------------------------------------------- image plates */
+/* The plate keeps its own background; a pseudo layer repeats it so the image
+   can drift without the box ever changing size. Only clip-path animates on
+   the plate itself — scaling the box would bleed over its neighbours. */
+.mo-plate {
+  position: relative;
+  overflow: hidden;
+  clip-path: inset(0 0 100% 0);
+}
+
+.mo-plate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: inherit;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: scale(1.08);
+  transition: transform 1400ms var(--ease-quiet);
+  will-change: transform;
+}
+
+.mo-plate.is-in {
+  clip-path: inset(0 0 0 0);
+  transition: clip-path var(--dur-slow) var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 90ms);
+}
+
+.mo-plate.is-in::before {
+  transform: scale(1);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 90ms);
+}
+
+/* the drift on hover lives on the pseudo layer, so the box never moves */
+.mo-card:hover .mo-plate::before,
+.mo-card:focus-within .mo-plate::before {
+  transform: scale(1.05);
+  transition-duration: 1200ms;
+  transition-delay: 0ms;
+}
+
+/* --------------------------------------------------------- hero artwork */
+.mo-hero-art {
+  opacity: 0;
+  transform: scale(1.06);
+}
+
+.mo-hero-art.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 1000ms var(--ease-quiet),
+    transform 1500ms var(--ease-quiet);
+}
+
+/* --------------------------------------------------- soft fades (scrims) */
+.mo-fade-slow {
+  opacity: 0;
+}
+
+.mo-fade-slow.is-in {
+  opacity: 1;
+  transition: opacity 900ms var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms);
+}
+
+/* ------------------------------------------------------------- hairlines */
+.mo-rule {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.mo-rule.is-in {
+  transform: scaleX(1);
+  transition: transform var(--dur-slow) var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 120ms);
+}
+
+/* ------------------------------------------------------ pointer spotlight */
+.mo-spot {
+  position: relative;
+}
+
+.mo-spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-quiet);
+  background: radial-gradient(
+    340px circle at var(--mo-mx, 50%) var(--mo-my, 50%),
+    color-mix(in srgb, var(--mo-spot, var(--color-ink)) 8%, transparent),
+    transparent 72%
+  );
+}
+
+.mo-spot:hover::after,
+.mo-spot:focus-visible::after {
+  opacity: 1;
+}
+
+/* -------------------------------------------------------------- the cards */
+.mo-card {
+  cursor: pointer;
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-card:hover {
+  translate: 0 -6px;
+}
+
+.mo-card:focus-visible,
+.mo-row:focus-visible,
+.mo-press:focus-visible,
+.mo-chip:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.mo-card:hover .mo-plate::before {
+  transform: scale(1.06);
+}
+
+.mo-card [data-pen="Title"] {
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-card:hover [data-pen="Title"] {
+  translate: 0 -2px;
+}
+
+/* --------------------------------------------------------- list rows */
+.mo-row {
+  cursor: pointer;
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-row:hover {
+  translate: 6px 0;
+}
+
+.mo-row svg {
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-row:hover svg {
+  translate: 4px -4px;
+}
+
+/* ------------------------------------------------------------ lift blocks */
+.mo-lift {
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-lift:hover {
+  translate: 0 -4px;
+}
+
+/* --------------------------------------------------------- press feedback */
+.mo-press {
+  cursor: pointer;
+  transition:
+    scale var(--dur-fast) var(--ease-quiet),
+    background-color var(--dur-fast) var(--ease-quiet),
+    color var(--dur-fast) var(--ease-quiet),
+    opacity var(--dur-fast) var(--ease-quiet);
+}
+
+.mo-press:hover {
+  scale: 1.02;
+}
+
+.mo-press:active {
+  scale: 0.97;
+}
+
+/* ---------------------------------------------------------------- chips */
+.mo-chip {
+  cursor: pointer;
+  transition:
+    scale var(--dur-fast) var(--ease-quiet),
+    background-color var(--dur-fast) var(--ease-quiet),
+    color var(--dur-fast) var(--ease-quiet);
+}
+
+.mo-chip:hover {
+  scale: 1.04;
+}
+
+.mo-chip:active {
+  scale: 0.96;
+}
+
+/* a filtered-out row: fades, then leaves the flow */
+.mo-off {
+  opacity: 0 !important;
+  translate: 0 -6px !important;
+  pointer-events: none !important;
+}
+
+.mo-gone {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------------ map */
+.mo-map-x {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.mo-map-y {
+  transform: scaleY(0);
+  transform-origin: center bottom;
+}
+
+.mo-map-pop {
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.mo-map-pin {
+  opacity: 0;
+  transform: translateY(-22px);
+}
+
+.mo-map-x.is-in {
+  transform: scaleX(1);
+  transition: transform 700ms var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 80ms);
+}
+
+.mo-map-y.is-in {
+  transform: scaleY(1);
+  transition: transform 700ms var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 80ms);
+}
+
+.mo-map-pop.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 620ms var(--ease-quiet),
+    transform 780ms var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 160ms);
+}
+
+.mo-map-pin.is-in {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 380ms var(--ease-quiet),
+    transform 700ms var(--ease-quiet);
+  transition-delay: calc(var(--mo-d, 0) * 70ms + 520ms);
+}
+
+@keyframes mo-pin-pulse {
+  0%,
+  100% {
+    scale: 1;
+  }
+  50% {
+    scale: 1.08;
+  }
+}
+
+.mo-map-pin.is-in svg {
+  animation: mo-pin-pulse 2600ms var(--ease-quiet) 900ms infinite;
+}
+
+.mo-map-pin:hover svg {
+  scale: 1.14;
+}
+
+.mo-map-pin svg {
+  transition: scale var(--dur-base) var(--ease-quiet);
+}
+
+/* --------------------------------------------------------- caption bands */
+/* The design states its own rule: "On hover the caption band rises: title,
+   artist, medium and date." The band is absolutely positioned inside the
+   plate, so nothing reflows — it is a reveal. */
+.mo-band {
+  z-index: 2;
+  translate: 0 100%;
+  transition: translate var(--dur-base) var(--ease-quiet);
+}
+
+.mo-card:hover .mo-band,
+.mo-card:focus-visible .mo-band,
+.mo-card:focus-within .mo-band,
+.mo-plate:hover .mo-band {
+  translate: 0 0;
+}
+/* touch devices never hover: show the band so the information is reachable */
+@media (hover: none) {
+  .mo-band {
+    translate: 0 0;
+  }
+}
+
+/* -------------------------------------------------------- active nav link */
+.nav-link {
+  position: relative;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1px;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-base) var(--ease-quiet);
+}
+
+.nav-link:hover::after,
+.nav-link[aria-current="page"]::after {
+  transform: scaleX(1);
+}
+
+/* ================================================================ human touch */
+/* Parallax depth — plates drift against the scroll, layered. */
+.mo-depth {
+  transform: translate3d(0, var(--mo-py, 0), 0);
+  will-change: transform;
+}
+
+/* 3D tilt — cards lean toward the pointer like hung frames. */
+.mo-tilt {
+  transform: perspective(1200px) rotateX(var(--mo-rx, 0deg)) rotateY(var(--mo-ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform var(--dur-base) var(--ease-quiet);
+  will-change: transform;
+}
+
+/* Magnetic buttons — a soft pull toward the pointer. */
+.mo-magnet {
+  translate: var(--mo-mx, 0) var(--mo-my, 0);
+  transition: translate 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: translate;
+}
+
+/* Breath — a barely-there sway, like air in the room. */
+.mo-breath {
+  animation: mo-breath 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes mo-breath {
+  0%,
+  100% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: rotateX(var(--mo-bx, 0deg)) rotateY(var(--mo-by, 0deg));
+  }
+}
+
+/* =====================================================================\n * The Threshold — first-visit curtain.\n * Two paper panels part along a seam, like a museum's double doors.\n * ===================================================================== */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.intro__panel {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50.2%;
+  background: var(--color-bg);
+}
+
+.intro__panel--top {
+  top: 0;
+}
+
+.intro__panel--bottom {
+  bottom: 0;
+}
+
+.intro[data-state="part"] .intro__panel--top {
+  transform: translateY(-101%);
+  transition: transform var(--dur-veil) var(--ease-veil);
+}
+
+.intro[data-state="part"] .intro__panel--bottom {
+  transform: translateY(101%);
+  transition: transform var(--dur-veil) var(--ease-veil);
+}
+
+.intro__seam {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 1px;
+  width: 0;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+  transition:
+    width 700ms var(--ease-quiet),
+    opacity 420ms var(--ease-quiet);
+}
+
+.intro[data-state="seam"] .intro__seam {
+  width: min(260px, 42vw);
+}
+
+.intro[data-state="part"] .intro__seam {
+  width: min(260px, 42vw);
+  opacity: 0;
+}
+
+.intro__word {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.intro[data-state="part"] .intro__word {
+  opacity: 0;
+  translate: 0 -16px;
+  transition:
+    opacity 420ms var(--ease-quiet),
+    translate 700ms var(--ease-quiet);
+}
+
+.intro__letters {
+  display: flex;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.intro__letter {
+  display: inline-block;
+  transform: translateY(115%);
+  opacity: 0;
+}
+
+.intro[data-state="seam"] .intro__letter,
+.intro[data-state="part"] .intro__letter {
+  transform: none;
+  opacity: 1;
+  transition:
+    transform 760ms var(--ease-quiet),
+    opacity 520ms var(--ease-quiet);
+  transition-delay: calc(var(--i) * 58ms + 260ms);
+}
+
+.intro__sub {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.intro[data-state="seam"] .intro__sub,
+.intro[data-state="part"] .intro__sub {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 620ms var(--ease-quiet),
+    transform 620ms var(--ease-quiet);
+  transition-delay: 860ms;
+}
+
+/* ============================================================ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .mo,
+  .mo.mo-x,
+  .mo.mo-fade,
+  .mo-plate,
+  .mo-hero-art,
+  .mo-fade-slow,
+  .mo-rule,
+  .mo-map-x,
+  .mo-map-y,
+  .mo-map-pop,
+  .mo-map-pin {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .intro {
+    display: none !important;
+  }
+
+  .mo-card:hover,
+  .mo-row:hover,
+  .mo-lift:hover,
+  .mo-press:hover,
+  .mo-press:active,
+  .mo-chip:hover,
+  .mo-chip:active {
+    translate: none !important;
+    scale: none !important;
+  }
+
+  .mo-map-pin.is-in svg {
+    animation: none !important;
+  }
+}

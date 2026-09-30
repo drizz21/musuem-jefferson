@@ -1,0 +1,398 @@
+/*
+ * art.css — the layer that makes the museum feel alive.
+ *
+ * Every rule here is purely additive: it adds hover states, draw animations,
+ * and cursor choreography on top of the design system. Nothing overrides a
+ * layout property, no colour is invented. All values come from tokens.
+ *
+ * Classes applied via motion.ts recipes (mo-*) or directly in JSX.
+ */
+
+/* ================================================================ cursor */
+/* A small art-museum crosshair that follows the pointer.
+   The element is injected by useArtCursor() in feel.ts.          */
+
+#jf-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  mix-blend-mode: multiply;
+  transition:
+    width 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 220ms ease;
+  will-change: transform;
+}
+
+#jf-cursor-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transition:
+    width 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background 200ms ease,
+    border-radius 300ms ease;
+}
+
+#jf-cursor-ring {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-accent);
+  opacity: 0;
+  transition:
+    width 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    height 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 220ms ease;
+}
+
+body[data-cursor="hover"] #jf-cursor-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+}
+
+body[data-cursor="hover"] #jf-cursor-ring {
+  width: 52px;
+  height: 52px;
+  opacity: 0.55;
+}
+
+body[data-cursor="press"] #jf-cursor-dot {
+  width: 4px;
+  height: 4px;
+}
+
+body[data-cursor="press"] #jf-cursor-ring {
+  width: 28px;
+  height: 28px;
+  opacity: 0.85;
+}
+
+body[data-cursor="image"] #jf-cursor-dot {
+  width: 64px;
+  height: 64px;
+  background: transparent;
+  border-radius: 50%;
+  border: 1px solid var(--color-on-dark);
+}
+
+body[data-cursor="image"] #jf-cursor-ring {
+  width: 64px;
+  height: 64px;
+  border-color: var(--color-on-dark);
+  opacity: 0;
+}
+
+/* ============================================================ nav links */
+/* Underline draws from the center outward on hover.             */
+
+.mo-link {
+  position: relative;
+  display: inline-block;
+}
+
+.mo-link::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transform: translateX(-50%);
+  transition: width 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-link:hover::after,
+.mo-link:focus-visible::after {
+  width: 100%;
+}
+
+/* ======================================================= button sweep  */
+/* A warm accent fill sweeps in from the left on hover.          */
+
+.mo-sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 260ms ease;
+}
+
+.mo-sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent-press, #4a1219);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+
+.mo-sweep:hover::before,
+.mo-sweep:focus-visible::before {
+  transform: scaleX(1);
+}
+
+/* Ghost button variant — fill goes accent-soft → accent */
+.mo-sweep-ghost {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 260ms ease;
+}
+
+.mo-sweep-ghost::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+
+.mo-sweep-ghost:hover::before,
+.mo-sweep-ghost:focus-visible::before {
+  transform: scaleX(1);
+}
+
+.mo-sweep-ghost:hover,
+.mo-sweep-ghost:focus-visible {
+  color: var(--color-on-dark);
+}
+
+/* ======================================================= rule draw     */
+/* Horizontal rules draw themselves left → right on enter.       */
+
+.mo-rule-draw {
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 920ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-rule-draw.mo-in {
+  transform: scaleX(1);
+}
+
+/* ====================================================== image hover    */
+/* Card image: scale + brightness on hover, with a subtle overlay.      */
+
+.mo-img {
+  position: relative;
+  overflow: hidden;
+}
+
+.mo-img > .mo-img-inner {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition:
+    transform 820ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 820ms ease;
+  will-change: transform;
+}
+
+.mo-img:hover > .mo-img-inner,
+.mo-img:focus-within > .mo-img-inner {
+  transform: scale(1.04);
+  filter: brightness(1.05);
+}
+
+/* Clip-reveal: image wipes in from bottom on scroll enter        */
+.mo-clip {
+  clip-path: inset(100% 0 0 0);
+  transition: clip-path 980ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-clip.mo-in {
+  clip-path: inset(0% 0 0 0);
+}
+
+/* ====================================================== card hover     */
+/* Card title & meta slide up on hover.                          */
+
+.mo-card-hover {
+  cursor: pointer;
+}
+
+.mo-card-hover .mo-card-meta {
+  transition: transform 380ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-card-hover:hover .mo-card-meta {
+  transform: translateY(-4px);
+}
+
+/* ====================================================== grayscale      */
+/* Team/artist portraits: desaturate by default, colour on hover. */
+
+.mo-grey {
+  filter: grayscale(0.6) brightness(0.96);
+  transition:
+    filter 620ms ease,
+    transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-grey:hover {
+  filter: grayscale(0) brightness(1.02);
+  transform: scale(1.02);
+}
+
+/* ====================================================== tag hover      */
+
+.mo-tag {
+  transition:
+    transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 260ms ease;
+}
+
+.mo-tag:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 16px -4px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
+/* ====================================================== section stagger */
+/* Each direct child staggers in — used on row containers.        */
+
+.mo-stagger > * {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 640ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 640ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-stagger.mo-in > *:nth-child(1) { transition-delay:   0ms; }
+.mo-stagger.mo-in > *:nth-child(2) { transition-delay:  80ms; }
+.mo-stagger.mo-in > *:nth-child(3) { transition-delay: 160ms; }
+.mo-stagger.mo-in > *:nth-child(4) { transition-delay: 240ms; }
+.mo-stagger.mo-in > *:nth-child(5) { transition-delay: 320ms; }
+.mo-stagger.mo-in > *:nth-child(6) { transition-delay: 400ms; }
+
+.mo-stagger.mo-in > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ====================================================== scramble text  */
+/* Heading chars animate individually. JS sets data-char on spans. */
+
+.mo-scramble .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(18px) rotate(var(--char-tilt, 0deg));
+  transition:
+    opacity 380ms ease,
+    transform 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--char-i, 0) * 28ms);
+}
+
+.mo-scramble.mo-in .char {
+  opacity: 1;
+  transform: translateY(0) rotate(0deg);
+}
+
+/* ====================================================== float accent   */
+/* Large decorative numbers (01, 02…) drift with a slow float.   */
+
+.mo-float {
+  animation: mo-float 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+
+@keyframes mo-float {
+  0%,  100% { transform: translateY(0);    }
+  50%        { transform: translateY(-8px); }
+}
+
+/* ====================================================== border draw    */
+/* Left border grows from top on hover (timeline rows, info rows) */
+
+.mo-border-draw {
+  position: relative;
+}
+
+.mo-border-draw::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 0;
+  background: var(--color-accent);
+  transition: height 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-border-draw:hover::before {
+  height: 100%;
+}
+
+/* ====================================================== info row hover */
+/* Info rows in Visit / Title Block: highlight on hover          */
+
+.mo-info-row {
+  transition:
+    background 280ms ease,
+    padding-left 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mo-info-row:hover {
+  background: color-mix(in srgb, var(--color-accent) 4%, transparent);
+  padding-left: 8px;
+}
+
+/* ====================================================== hero text glide */
+/* Hero content slides up a touch on scroll (complement to parallax)    */
+
+.mo-hero-glide {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+/* ====================================================== accent dot pulse */
+
+.mo-dot-pulse {
+  animation: mo-dot-pulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes mo-dot-pulse {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%      { transform: scale(1.6); opacity: 0.5; }
+}
+
+/* ====================================================== reduced motion  */
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-link::after,
+  .mo-sweep::before,
+  .mo-sweep-ghost::before,
+  .mo-rule-draw,
+  .mo-clip,
+  .mo-img > .mo-img-inner,
+  .mo-card-hover .mo-card-meta,
+  .mo-grey,
+  .mo-tag,
+  .mo-stagger > *,
+  .mo-scramble .char,
+  .mo-float,
+  .mo-border-draw::before,
+  .mo-info-row {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    clip-path: none !important;
+  }
+}

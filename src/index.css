@@ -1,0 +1,417 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — copied 1:1 from the pen.dev document variables
+ * (GetVariables() on the "Design System" page). Do not retype values.
+ * ------------------------------------------------------------------------- */
+:root {
+  /* surfaces */
+  --color-bg: #faf8f5;
+  --color-surface: #ffffff;
+
+  /* ink scale */
+  --color-ink: #14110f;
+  --color-ink-2: #6b6560;
+  --color-ink-3: #9a928a;
+
+  /* lines */
+  --color-line: #e3ddd5;
+
+  /* brand accent — one only, never introduce a second */
+  --color-accent: #6e1e28;
+  --color-accent-soft: #f3e8e6;
+
+  /* dark bands */
+  --color-dark-2: #241f1b;
+  --color-on-dark: #f6f3ee;
+  --color-on-dark-2: #9e958c;
+
+  /* scrim + alpha helpers used by hero overlays */
+  --color-scrim-90: #14110fe6;
+  --color-scrim-60: #14110f99;
+  --color-scrim-00: #14110f00;
+  --color-transparent: #00000000;
+
+  /* secondary shades present in the design (rules on dark, map fills) */
+  --color-line-dark: #3a332e;
+  --color-on-dark-3: #cfc8bf;
+  --color-on-dark-4: #b8b0a6;
+  --color-accent-press: #4a1219;
+  --color-surface-warm: #ede7df;
+  --color-map-block: #e5dfd6;
+  --color-map-ground: #efeae3;
+  --color-map-water: #dce3e6;
+  --color-map-park: #dfe4d6;
+  --color-map-water-label: #8a9aa0;
+  --color-map-park-label: #8a9a80;
+
+  /* motion tokens (from the Motion section of the design system) */
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 640ms;
+  --dur-veil: 900ms;
+  --ease-quiet: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-veil: cubic-bezier(0.65, 0, 0.35, 1);
+  --stagger-plate: 60ms;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Font stacks live here, NOT in :root — comma-separated values break
+     CSS custom properties. */
+  .font-display {
+    font-family: "Cormorant Garamond", system-ui, sans-serif;
+  }
+
+  .font-body {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * "The Veil Wipe" — the museum's signature page transition.
+ * A warm paper sheet sweeps up, the route swaps beneath it, then the veil
+ * lifts and content settles. Durations/easing come from the design tokens.
+ * ------------------------------------------------------------------------- */
+@keyframes veil-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes veil-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.veil-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: var(--color-accent-soft);
+  pointer-events: none;
+}
+
+.veil-overlay[data-phase="in"] {
+  animation: veil-in var(--dur-veil) var(--ease-veil) forwards;
+}
+
+.veil-overlay[data-phase="hold"] {
+  transform: translateY(0);
+}
+
+.veil-overlay[data-phase="out"] {
+  animation: veil-out var(--dur-veil) var(--ease-veil) forwards;
+}
+
+/* centered museum wordmark inside the transition veil */
+.veil-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.veil-wordmark {
+  font-family: "Cormorant Garamond", system-ui, sans-serif;
+  font-size: clamp(32px, 4.5vw, 68px);
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  line-height: 0.95;
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.veil-sub {
+  font-family: "Cormorant Garamond", system-ui, sans-serif;
+  font-size: clamp(11px, 1.4vw, 20px);
+  font-weight: 400;
+  letter-spacing: 0.6em;
+  line-height: 1.1;
+  color: var(--color-ink-2);
+  text-transform: uppercase;
+  margin-top: 0.5em;
+}
+
+/* page content entrance, used on every route change */
+.page-enter .settle {
+  animation: settle var(--dur-slow) var(--ease-quiet) both;
+}
+
+.page-enter .rise {
+  animation: rise var(--dur-base) var(--ease-quiet) both;
+  animation-delay: calc(var(--stagger-plate) * 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .veil-overlay,
+  .page-enter .settle,
+  .page-enter .rise {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .hero-shell {
+    height: 700px;
+  }
+
+  .hero-artwork,
+  .hero-scrim {
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-content {
+    width: min(620px, calc(100% - 96px));
+    left: 48px;
+    top: 330px;
+  }
+
+  .hero-title {
+    font-size: clamp(64px, 8vw, 88px);
+    line-height: 0.95;
+  }
+
+  .hero-shell > [data-pen="Meta"] {
+    right: 48px;
+    left: auto;
+    top: auto;
+    bottom: 32px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-shell {
+    height: 600px;
+  }
+
+  .hero-content {
+    width: calc(100% - 48px);
+    left: 24px;
+    top: 292px;
+    gap: 16px;
+  }
+
+  .hero-title {
+    font-size: clamp(46px, 13vw, 58px);
+    line-height: 0.96;
+  }
+
+  .hero-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  [data-pen="Hero Buttons"] > div {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .hero-shell > [data-pen="Meta"] {
+    display: none;
+  }
+}
+
+.responsive-page,
+.responsive-page > * {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .responsive-nav {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  .responsive-footer {
+    padding: 56px 32px;
+  }
+
+  .responsive-page > [data-pen="Header"],
+  .responsive-page > [data-pen="Intro"],
+  .responsive-page > [data-pen="Stats"],
+  .responsive-page > [data-pen="Featured Exhibitions"],
+  .responsive-page > [data-pen="Collection Teaser"],
+  .responsive-page > [data-pen="Visit Strip"],
+  .responsive-page > [data-pen="Body"],
+  .responsive-page > [data-pen="Feature"],
+  .responsive-page > [data-pen="Grid"],
+  .responsive-page > [data-pen="List"] {
+    max-width: 100%;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  .responsive-page > [data-pen="Header"],
+  .responsive-page > [data-pen="Intro"],
+  .responsive-page > [data-pen="Visit Strip"] {
+    flex-wrap: wrap;
+  }
+
+  .responsive-page [class*="w-[1440px]"],
+  .responsive-page [class*="w-[1200px]"],
+  .responsive-page [class*="w-[760px]"],
+  .responsive-page [class*="w-[720px]"],
+  .responsive-page [class*="w-[700px]"],
+  .responsive-page [class*="w-[620px]"],
+  .responsive-page [class*="w-[560px]"],
+  .responsive-page [class*="w-[520px]"],
+  .responsive-page [class*="w-[420px]"],
+  .responsive-page [class*="w-[400px]"] {
+    width: 100%;
+    max-width: 100%;
+    flex-shrink: 1;
+  }
+
+  .responsive-page [data-pen="Plate"],
+  .responsive-page [data-pen="Photo"] {
+    height: clamp(260px, 42vw, 460px);
+  }
+}
+
+@media (max-width: 767px) {
+  .responsive-nav {
+    height: 72px;
+    padding-left: 20px;
+    padding-right: 16px;
+  }
+
+  .responsive-nav [data-pen="Sub"],
+  .responsive-nav [data-pen="CTA"] {
+    display: none;
+  }
+
+  .responsive-footer {
+    gap: 40px;
+    padding: 48px 24px;
+  }
+
+  .responsive-footer [data-pen="Top"],
+  .responsive-footer [data-pen="Cols"],
+  .responsive-footer [data-pen="Bottom"] {
+    width: 100%;
+    gap: 28px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .responsive-footer [data-pen="Cols"] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .responsive-footer [data-pen="Bottom"] {
+    align-items: flex-start;
+  }
+
+  .responsive-footer [data-pen="Copy"],
+  .responsive-footer [data-pen="Addr"] {
+    white-space: normal;
+  }
+
+  .responsive-page > [data-pen="Header"],
+  .responsive-page > [data-pen="Intro"],
+  .responsive-page > [data-pen="Stats"],
+  .responsive-page > [data-pen="Featured Exhibitions"],
+  .responsive-page > [data-pen="Collection Teaser"],
+  .responsive-page > [data-pen="Visit Strip"],
+  .responsive-page > [data-pen="Body"],
+  .responsive-page > [data-pen="Feature"],
+  .responsive-page > [data-pen="Grid"],
+  .responsive-page > [data-pen="List"] {
+    padding: 56px 24px;
+    gap: 32px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .responsive-page > [data-pen="Header"] {
+    padding-top: 48px;
+    padding-bottom: 32px;
+  }
+
+  .responsive-page [data-pen="Left"],
+  .responsive-page [data-pen="Intro"],
+  .responsive-page [data-pen="Side"],
+  .responsive-page [data-pen="Text"],
+  .responsive-page [data-pen="Brand"],
+  .responsive-page [data-pen="Cols"] {
+    width: 100%;
+    max-width: 100%;
+    flex-shrink: 1;
+  }
+
+  .responsive-page [data-pen="Row"] {
+    width: 100%;
+    flex-direction: column;
+    gap: 36px;
+  }
+
+  .responsive-page [data-pen="Row"] > div,
+  .responsive-page [data-pen="Grid"] > div,
+  .responsive-page [data-pen="List"] > div {
+    width: 100%;
+    max-width: 100%;
+    flex: 0 1 auto;
+  }
+
+  .responsive-page [data-pen="Title"] {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .responsive-page [data-pen="Plate"],
+  .responsive-page [data-pen="Photo"] {
+    height: clamp(220px, 70vw, 340px);
+  }
+
+  .responsive-page [data-pen="Hero Content"] {
+    width: calc(100% - 48px);
+  }
+}
