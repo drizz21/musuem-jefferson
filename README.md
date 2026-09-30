@@ -1,4 +1,4 @@
-# Meridian — Museum of Art
+# JEFFERSON - Museum of Art
 
 Marketing website for the Meridian Museum of Art, built from the pen.dev design
 document. **Vite + React + TypeScript + Tailwind CSS v4.**
