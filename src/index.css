@@ -227,14 +227,14 @@
 
 @media (max-width: 767px) {
   .hero-shell {
-    height: 600px;
+    height: 760px;
   }
 
-  .hero-content {
+  .responsive-page .hero-content {
     width: calc(100% - 48px);
     left: 24px;
-    top: 292px;
-    gap: 16px;
+    top: 250px;
+    gap: 14px;
   }
 
   .hero-title {
@@ -294,24 +294,148 @@
     flex-wrap: wrap;
   }
 
+  /* fixed design widths → fluid (content-box exports need border-box too,
+     otherwise their horizontal padding pushes them past the viewport) */
   .responsive-page [class*="w-[1440px]"],
+  .responsive-page [class*="w-[1248px]"],
   .responsive-page [class*="w-[1200px]"],
+  .responsive-page [class*="w-[980px]"],
   .responsive-page [class*="w-[760px]"],
   .responsive-page [class*="w-[720px]"],
   .responsive-page [class*="w-[700px]"],
+  .responsive-page [class*="w-[680px]"],
+  .responsive-page [class*="w-[624px]"],
   .responsive-page [class*="w-[620px]"],
+  .responsive-page [class*="w-[600px]"],
   .responsive-page [class*="w-[560px]"],
   .responsive-page [class*="w-[520px]"],
   .responsive-page [class*="w-[420px]"],
-  .responsive-page [class*="w-[400px]"] {
+  .responsive-page [class*="w-[400px]"],
+  .responsive-page [class*="w-[380px]"],
+  .responsive-page [class*="w-[360px]"],
+  .responsive-page [class*="w-[340px]"],
+  .responsive-page [class*="w-[330px]"] {
+    box-sizing: border-box;
     width: 100%;
     max-width: 100%;
     flex-shrink: 1;
   }
 
+  /* hero-content: the [class*="w-[620px]"] rule above outranks the plain
+     .hero-content rule — restate it with matching specificity */
+  .responsive-page .hero-content {
+    width: min(620px, calc(100% - 96px));
+    left: 48px;
+  }
+
+  /* Plate pen doubles as image (Home/Exhibitions) and caption (detail) —
+     the clamp below is for images; the caption (absolute) must stay auto */
+  .responsive-page [data-pen="Plate"].absolute {
+    height: auto;
+  }
+
+  /* every section: desktop pads 96px per side; tighten + let rows stack.
+     (the export only padded the pens someone had already tested) */
+  .responsive-page > * {
+    padding-left: 48px;
+    padding-right: 48px;
+    flex-wrap: wrap;
+  }
+
+  /* full-bleed heroes keep zero padding */
+  .responsive-page > [data-pen="Hero"],
+  .responsive-page > [data-pen="Artwork Hero"] {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* header rows: eyebrow/title on the left, text link on the right */
+  .responsive-page [data-pen="Head"] {
+    flex-wrap: wrap;
+    row-gap: 16px;
+  }
+
+  /* 4 × 280px stat cards must wrap into rows */
+  .responsive-page [data-pen="Stats"] {
+    flex-wrap: wrap;
+    row-gap: 40px;
+    column-gap: 32px;
+  }
+
+  /* filter chips wrap instead of overflowing */
+  .responsive-page [data-pen="Filters"] {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+
+  /* exhibition status chips stay compact on narrow screens */
+  .responsive-page [data-pen="Filters"] > [data-pen="Current"],
+  .responsive-page [data-pen="Filters"] > [data-pen="Upcoming"] {
+    padding: 7px 13px;
+  }
+
+  .responsive-page
+    [data-pen="Filters"]
+    > [data-pen="Current"]
+    [data-pen="Label"],
+  .responsive-page
+    [data-pen="Filters"]
+    > [data-pen="Upcoming"]
+    [data-pen="Label"] {
+    font-size: 10px;
+  }
+
+  /* collection filter bar: 15+ nowrap chips in one 74px row → wrap + auto height */
+  .responsive-page [data-pen="Filter Bar"] {
+    height: auto;
+    min-height: 0;
+    flex-wrap: wrap;
+    row-gap: 8px;
+    column-gap: 12px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  /* two 624px columns (visit info + map) stack */
+  .responsive-page [data-pen="Info Grid"] {
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+
+  /* exhibition rows: image + text stack (657px can't hold 420 + 700) */
+  .responsive-page [data-pen="List"] > div {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 32px;
+    height: auto;
+  }
+
+  /* about timeline: label column + rows wrap */
+  .responsive-page [data-pen="Timeline"] {
+    flex-wrap: wrap;
+    row-gap: 24px;
+  }
+
+  .responsive-page [data-pen="Rows"] > div {
+    flex-wrap: wrap;
+    column-gap: 32px;
+    row-gap: 8px;
+  }
+
   .responsive-page [data-pen="Plate"],
   .responsive-page [data-pen="Photo"] {
     height: clamp(260px, 42vw, 460px);
+  }
+
+  /* collection rows become one fluid card per line */
+  .responsive-page [data-pen="Grid"] > div {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .responsive-page [data-pen="Grid"] > div > div {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -411,7 +535,172 @@
     height: clamp(220px, 70vw, 340px);
   }
 
+  /* keep collection and exhibition artwork proportional to the viewport */
+  .responsive-page [data-pen="Grid"] [data-pen="Plate"] {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .responsive-page [data-pen="Artwork Hero"] {
+    height: clamp(320px, 92vw, 520px);
+  }
+
+  .responsive-page [data-pen="Artwork Hero"] [data-pen="Hero Art"] {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+  }
+
+  .responsive-page [data-pen="Artist"] [data-pen="Portrait"] {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
   .responsive-page [data-pen="Hero Content"] {
     width: calc(100% - 48px);
+    left: 24px;
+    top: 250px;
+    gap: 14px;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile type scale — the export ships one fixed px size per breakpoint, so
+ * every display size gets a clamp() here instead of per-element rewrites.
+ * ------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .responsive-page [class*="text-[92px]"],
+  .responsive-page [class*="text-[88px]"],
+  .responsive-page [class*="text-[84px]"] {
+    font-size: clamp(42px, 11vw, 84px);
+    line-height: 1.02;
+    white-space: normal;
+  }
+
+  .responsive-page [class*="text-[56px]"],
+  .responsive-page [class*="text-[52px]"] {
+    font-size: clamp(34px, 7vw, 56px);
+    line-height: 1.06;
+    white-space: normal;
+  }
+
+  .responsive-page [class*="text-[48px]"],
+  .responsive-page [class*="text-[46px]"],
+  .responsive-page [class*="text-[44px]"] {
+    font-size: clamp(30px, 6vw, 48px);
+    line-height: 1.1;
+    white-space: normal;
+  }
+
+  .responsive-page [class*="text-[40px]"],
+  .responsive-page [class*="text-[38px]"],
+  .responsive-page [class*="text-[36px]"],
+  .responsive-page [class*="text-[34px]"] {
+    font-size: clamp(26px, 5vw, 40px);
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  /* nowrap labels + right-aligned links overflow narrow screens */
+  .responsive-page [class*="white-space:nowrap"] {
+    white-space: normal;
+  }
+
+  /* stat cards each take a row on phones */
+  .responsive-page [data-pen="Stat"] {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .responsive-page [data-pen="Head"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  /* phones: 24px gutters everywhere */
+  .responsive-page > * {
+    padding-left: 24px;
+    padding-right: 24px;
+    row-gap: 32px;
+    column-gap: 24px;
+  }
+
+  .responsive-page > [data-pen="Hero"],
+  .responsive-page > [data-pen="Artwork Hero"] {
+    padding-left: 0;
+    padding-right: 0;
+    row-gap: 0;
+    column-gap: 0;
+  }
+
+  /* plate caption: nowrap at left:96 ran off the right edge on phones */
+  .responsive-page [data-pen="Plate"].absolute {
+    height: auto;
+    left: 24px;
+    right: 24px;
+    top: auto;
+    bottom: 20px;
+    white-space: normal;
+  }
+
+  /* paired CTA buttons stack and go full-width instead of overflowing */
+  .responsive-page [data-pen="Buttons"] {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .responsive-page [data-pen="Buttons"] > div {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Mobile navigation drawer — the hamburger was decorative before; these are
+ * its styles. open/close state lives in NavBar.tsx (backdrop click, Escape,
+ * route change).
+ * ------------------------------------------------------------------------- */
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(20, 17, 15, 0.45);
+}
+
+.nav-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 90;
+  height: 100%;
+  height: 100dvh;
+  width: min(320px, 86vw);
+  background: var(--color-bg);
+  border-left: 1px solid var(--color-line);
+  transform: translateX(100%);
+  transition: transform var(--dur-base) var(--ease-quiet);
+  display: flex;
+  flex-direction: column;
+  padding: 8px 24px 32px;
+}
+
+.nav-drawer-open {
+  transform: translateX(0);
+}
+
+.nav-drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.nav-drawer-links {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }

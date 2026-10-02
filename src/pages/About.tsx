@@ -37,12 +37,7 @@ export default function About() {
             data-pen="Title"
             className="text-[84px]/[82px] box-border w-full text-[var(--color-ink)] font-display font-normal text-left"
           >
-            {/* Title */}
-            A house for
-            <br />
-            looking
-            <br />
-            slowly.
+            {/* Title */}A house for looking slowly.
           </div>
         </div>
         <div

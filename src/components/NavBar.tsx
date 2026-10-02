@@ -1,12 +1,14 @@
-import { Link } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 
 /**
  * NavBar — lifted from the "Nav" component in the pen.dev document.
  *
  * Every class string matches the design exactly; the only changes are that
- * the labels became <Link> elements so routes work, and the link row is
- * hidden below md (the design ships a separate 390px artboard for mobile).
+ * the labels became <Link> elements so routes work, the link row is hidden
+ * below md (the design ships a separate 390px artboard for mobile), and the
+ * hamburger opens a real mobile drawer.
  */
 const LINKS = [
   { label: "Exhibitions", to: "/exhibitions" },
@@ -16,6 +18,27 @@ const LINKS = [
 ];
 
 export default function NavBar() {
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+
+  // close the drawer on route change
+  useEffect(() => setOpen(false), [location.pathname]);
+
+  // close on Escape, lock body scroll while open
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
   return (
     <div
       data-pen="Nav"
@@ -41,7 +64,7 @@ export default function NavBar() {
         </span>
       </Link>
 
-      {/* Links */}
+      {/* Links (desktop) */}
       <nav
         data-pen="Links"
         className="box-border w-fit shrink-0 h-fit hidden md:flex flex-row gap-[34px] justify-start items-center"
@@ -58,12 +81,12 @@ export default function NavBar() {
         ))}
       </nav>
 
-      {/* CTA */}
+      {/* CTA + hamburger */}
       <div className="box-border w-fit shrink-0 h-fit flex flex-row gap-[12px] justify-start items-center">
         <Link
           to="/visit"
           data-pen="CTA"
-          className="box-border w-fit shrink-0 h-fit flex flex-row gap-[10px] px-[28px] py-[16px] justify-start items-center bg-[var(--color-accent)] rounded-[2px] transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-accent-press)]"
+          className="box-border w-fit shrink-0 h-fit hidden sm:flex flex-row gap-[10px] px-[28px] py-[16px] justify-start items-center bg-[var(--color-accent)] rounded-[2px] transition-colors duration-[var(--dur-fast)] hover:bg-[var(--color-accent-press)]"
         >
           <span
             data-pen="Label"
@@ -74,11 +97,65 @@ export default function NavBar() {
         </Link>
         <button
           type="button"
-          aria-label="Open menu"
-          className="md:hidden w-[22px] h-[22px] flex items-center justify-center text-[var(--color-ink)]"
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden w-[44px] h-[44px] -mr-[10px] flex items-center justify-center text-[var(--color-ink)]"
         >
-          <Menu className="w-[22px] h-[22px]" />
+          {open ? (
+            <X className="w-[24px] h-[24px]" />
+          ) : (
+            <Menu className="w-[24px] h-[24px]" />
+          )}
         </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div
+          className="nav-backdrop md:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <div
+        className={"nav-drawer md:hidden" + (open ? " nav-drawer-open" : "")}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+      >
+        <div className="nav-drawer-head">
+          <span className="text-[11px] font-body font-semibold tracking-[2px] text-[var(--color-ink-3)]">
+            MENU
+          </span>
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="w-[44px] h-[44px] flex items-center justify-center -mr-[10px] text-[var(--color-ink)]"
+          >
+            <X className="w-[24px] h-[24px]" />
+          </button>
+        </div>
+        <nav className="nav-drawer-links">
+          {LINKS.map(({ label, to }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={() => setOpen(false)}
+              className="font-display text-[34px] text-[var(--color-ink)] border-b border-[var(--color-line)] py-[14px] block"
+            >
+              {label}
+            </Link>
+          ))}
+          <Link
+            to="/visit"
+            onClick={() => setOpen(false)}
+            className="mt-[20px] inline-flex items-center justify-center bg-[var(--color-accent)] text-[var(--color-on-dark)] font-body font-semibold text-[12px] tracking-[1.4px] px-[28px] py-[16px] rounded-[2px]"
+          >
+            TICKETS
+          </Link>
+        </nav>
       </div>
     </div>
   );
